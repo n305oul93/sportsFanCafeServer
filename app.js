@@ -51,7 +51,8 @@ app.use(
 
 // where add authentication
 function auth(req, res, next) {
-  console.log(req.session)
+  console.log(req.headers)
+  console.log(req.sessions)
   // signedCookies provided by cookieParser middleware, will parse signed cookie from request, if not properly signed will return false; user is property we are adding to signed cookie
   // not using cookies so signedCookies not available
   // if (!req.signedCookies.user) {
