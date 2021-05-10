@@ -49,6 +49,9 @@ app.use(
   })
 )
 
+app.use('/', indexRouter)
+app.use('/users', usersRouter)
+
 // where add authentication
 function auth(req, res, next) {
   console.log(req.headers)
@@ -57,37 +60,39 @@ function auth(req, res, next) {
   // not using cookies so signedCookies not available
   // if (!req.signedCookies.user) {
   if (!req.session.user) {
-    const authHeader = req.headers.authorization
-    if (!authHeader) {
-      const err = new Error('You are not authenticated!')
-      res.setHeader('WWW-Authenticate', 'Basic')
-      err.status = 401
-      return next(err)
-    }
+    // next two lines now being handled by userRouter
+    // const authHeader = req.headers.authorization
+    // if (!authHeader) {
+    const err = new Error('You are not authenticated!')
+    // below line is being handled in userRouter
+    // res.setHeader('WWW-Authenticate', 'Basic')
+    err.status = 401
+    return next(err)
+    // }
 
-    const auth = Buffer.from(authHeader.split(' ')[1], 'base64')
-      .toString()
-      .split(':')
-    const user = auth[0]
-    const pass = auth[1]
-    if (user === 'admin' && pass === 'password') {
-      // correct username & password entered, setup cookie
-      // res.cookie apart of express response object API
-      // pass name of cookie, value to store in name property
-      // res.cookie('user', 'admin', { signed: true })
-      req.session.user = 'admin'
-      return next() // user was authorized
-    } else {
-      const err = new Error('You are not authenticated!')
-      res.setHeader('WWW-Authenticate', 'Basic')
-      err.status = 401
-      return next(err)
-    }
+    // const auth = Buffer.from(authHeader.split(' ')[1], 'base64')
+    //   .toString()
+    //   .split(':')
+    // const user = auth[0]
+    // const pass = auth[1]
+    // if (user === 'admin' && pass === 'password') {
+    //   // correct username & password entered, setup cookie
+    //   // res.cookie apart of express response object API
+    //   // pass name of cookie, value to store in name property
+    //   // res.cookie('user', 'admin', { signed: true })
+    //   req.session.user = 'admin'
+    //   return next() // user was authorized
+    // } else {
+    //   const err = new Error('You are not authenticated!')
+    //   res.setHeader('WWW-Authenticate', 'Basic')
+    //   err.status = 401
+    //   return next(err)
+    // }
   } else {
     // this means there is a signed cookie in the request
     // not using cookies
     // if (req.signedCookies.user === 'admin') {
-    if (req.session.user === 'admin') {
+    if (req.session.user === 'authenticated') {
       return next()
     } else {
       const err = new Error('You are not authenticated!')
@@ -101,8 +106,6 @@ app.use(auth)
 
 app.use(express.static(path.join(__dirname, 'public')))
 
-app.use('/', indexRouter)
-app.use('/users', usersRouter)
 app.use('/blog', blogRouter)
 
 // catch 404 and forward to error handler
