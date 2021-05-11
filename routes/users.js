@@ -16,17 +16,31 @@ router.post('/signup', (req, res) => {
     new User({ username: req.body.username }),
     req.body.password,
     // callback if err from register method, or err will be null if no err
-    err => {
+    (err, user) => {
       if (err) {
         res.statusCode = 500 // lets user know not user error but server error
         res.setHeader('Content-Type', 'application/json')
         res.json({ err: err })
       } else {
-        // below will return function
-        passport.authenticate('local')(req, res, () => {
-          res.statusCode = 200
-          res.setHeader('Content-Type', 'application/json')
-          res.json({ success: true, status: 'Registration Successful!' })
+        if (req.body.firstname) {
+          user.firstname = req.body.firstname
+        }
+        if (req.body.lastname) {
+          user.lastname = req.body.lastname
+        }
+        user.save(err => {
+          if (err) {
+            res.statusCode = 500
+            res.setHeader('Content-Type', 'application/json')
+            res.json({ err: err })
+            return
+          }
+          // below will return function
+          passport.authenticate('local')(req, res, () => {
+            res.statusCode = 200
+            res.setHeader('Content-Type', 'application/json')
+            res.json({ success: true, status: 'Registration Successful!' })
+          })
         })
       }
     }
